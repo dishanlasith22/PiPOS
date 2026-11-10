@@ -1,7 +1,3 @@
-opencv-python-headless
-pyzbar
-numpy
-streamlit
 streamlit
 pandas
 qrcode
