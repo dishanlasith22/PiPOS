@@ -1,4 +1,33 @@
 import streamlit as st
+import cv2
+import numpy as np
+from pyzbar.pyzbar import decode  # බාර්කෝඩ් කියවීමට (සංස්කරණය: අවශ්‍ය නම් pip install pyzbar opencv-python-headless)
+
+st.subheader("📷 Product Barcode & QR Scanner")
+
+# ජංගම දුරකථන කැමරාවෙන් ෆොටෝ එකක් හෝ ලයිව් කැමරාවෙන් කැප්චර් කිරීම
+camera_image = st.camera_input("Scan Dealer / Product Barcode")
+
+if camera_image is not None:
+    # Bytes වලින් එන ඉන්පුට් එක OpenCV ඉමේජ් එකක් බවට හැරවීම
+    bytes_data = camera_image.getvalue()
+    cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+    
+    # බාර්කෝඩ් හෝ QR කෝඩ් ඩිකෝඩ් කිරීම
+    decoded_objects = decode(cv2_img)
+    
+    if decoded_objects:
+        for obj in decoded_objects:
+            barcode_data = obj.data.decode('utf-8')
+            barcode_type = obj.type
+            st.success(f"✅ Successfully Scanned! ({barcode_type})")
+            st.write(f"**Item Code / Data:** `{barcode_data}`")
+            
+            # මෙතැනට ඔබගේ ඩේටාබේස් එකෙන් අදාළ අයිතමය (Item) සෙවීමට හෝ Cart එකට එකතු කිරීමට අවශ්‍ය ලොජික් එක දමන්න
+    else:
+        st.warning("⚠️ No barcode detected. Please try scanning again clearly.")
+
+import streamlit as st
 import sqlite3
 from database import init_db
 from shop_owner_app import render_shop_owner_app
