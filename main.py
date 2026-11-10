@@ -1,31 +1,38 @@
 import streamlit as st
-import cv2
-import numpy as np
-from pyzbar.pyzbar import decode  # බාර්කෝඩ් කියවීමට (සංස්කරණය: අවශ්‍ය නම් pip install pyzbar opencv-python-headless)
+import streamlit.components.v1 as components
 
-st.subheader("📷 Product Barcode & QR Scanner")
+st.subheader("📷 Live Barcode & QR Scanner")
 
-# ජංගම දුරකථන කැමරාවෙන් ෆොටෝ එකක් හෝ ලයිව් කැමරාවෙන් කැප්චර් කිරීම
-camera_image = st.camera_input("Scan Dealer / Product Barcode")
-
-if camera_image is not None:
-    # Bytes වලින් එන ඉන්පුට් එක OpenCV ඉමේජ් එකක් බවට හැරවීම
-    bytes_data = camera_image.getvalue()
-    cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+# ජංගම දුරකථන කැමරාවෙන් සජීවීව බාර්කෝඩ් ස්කෑන් කරන JavaScript කෝඩ් එක
+scanner_code = """
+<div style="width: 100%; max-width: 400px; margin: auto;" id="reader"></div>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+function onScanSuccess(decodedText, decodedResult) {
+    // බාර්කෝඩ් එක සාර්ථකව ස්කෑන් වූ පසු පෙන්වන අංකය
+    document.getElementById('scanned-result').innerHTML = "<b style='color:green; font-size:18px;'>✅ Scanned Code: " + decodedText + "</b>";
     
-    # බාර්කෝඩ් හෝ QR කෝඩ් ඩිකෝඩ් කිරීම
-    decoded_objects = decode(cv2_img)
-    
-    if decoded_objects:
-        for obj in decoded_objects:
-            barcode_data = obj.data.decode('utf-8')
-            barcode_type = obj.type
-            st.success(f"✅ Successfully Scanned! ({barcode_type})")
-            st.write(f"**Item Code / Data:** `{barcode_data}`")
-            
-            # මෙතැනට ඔබගේ ඩේටාබේස් එකෙන් අදාළ අයිතමය (Item) සෙවීමට හෝ Cart එකට එකතු කිරීමට අවශ්‍ය ලොජික් එක දමන්න
-    else:
-        st.warning("⚠️ No barcode detected. Please try scanning again clearly.")
+    // මෙහිදී කෝඩ් එක Streamlit වෙත යැවීම සඳහා අවශ්‍ය ලොජික් එක ක්‍රියාත්මක කළ හැක
+    console.log(`Code matched = ${decodedText}`);
+}
+
+function onScanFailure(error) {
+    // ස්කෑන් වන අතරතුර දෝෂ සිදු නොවීමට (Quiet failure)
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: { width: 250, height: 100 } }, /* verbose= */ false);
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+
+<div id="scanned-result" style="text-align: center; margin-top: 15px; padding: 10px; background: #f0f2f6; border-radius: 8px;">
+    📷 Point camera at barcode to scan...
+</div>
+"""
+
+# Streamlit ඇප් එක තුළ මෙම කැමරා ස්කෑනරය පෙන්වීම
+components.html(scanner_code, height=450)
+
 
 import streamlit as st
 import sqlite3
