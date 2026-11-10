@@ -92,41 +92,79 @@ with tab2:
         billing_scanner_html = """
         <div style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
             <div style="width: 100%; height: 300px; border: 3px solid #2979FF; border-radius: 12px; background: #000;" id="billing-reader"></div>
-        </div>
-        
-        <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+import streamlit as st
+import streamlit.components.v1 as components
 
-        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-        <script>
-        function onBillingScanSuccess(decodedText, decodedResult) {
-            var audio = document.getElementById('beep-sound');
-            if(audio) { audio.play(); }
+st.subheader("📷 PiPOS Advanced Barcode & QR Scanner")
 
-            const inputField = window.parent.document.querySelector('input[aria-label="Scanned Barcode (Billing)"]');
-            if (inputField) {
-                inputField.value = decodedText;
-                inputField.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            document.getElementById('billing-result').innerHTML = "<b style='color:blue; font-size:18px;'>✅ Scanned: " + decodedText + "</b>";
-        }
+if 'scanner_active' not in st.session_state:
+    st.session_state.scanner_active = False
 
-        let html5BillingQrCode = new Html5Qrcode("billing-reader");
-        html5BillingQrCode.start(
-            { facingMode: "environment" },
-            { fps: 15, qrbox: { width: 280, height: 280 } },
-            onBillingScanSuccess
-        ).catch(err => { console.log(err); });
-        </script>
-        <div id="billing-result" style="text-align: center; margin-top: 10px; color: blue; font-weight: bold;"></div>
-        """
-        components.html(billing_scanner_html, height=380)
+col1, col2 = st.columns([1, 1])
+with col1:
+    if not st.session_state.scanner_active:
+        if st.button("📷 Open Pro Scanner", type="primary", use_container_width=True):
+            st.session_state.scanner_active = True
+            st.rerun()
+with col2:
+    if st.session_state.scanner_active:
+        if st.button("❌ Close Scanner", type="secondary", use_container_width=True):
+            st.session_state.scanner_active = False
+            st.rerun()
 
-    # බිල් කරන විට ස්කෑන් වන අංකය වැටෙන තැන
-    billing_barcode = st.text_input("Scanned Barcode (Billing)", placeholder="Scan product barcode...")
+if st.session_state.scanner_active:
+    # වැඩි දියුණු කළ Native Barcode Detector HTML5 කෝඩ් එක (వක්‍ර කෝඩ් සඳහා වඩාත් නිරවද්‍යයි)
+    advanced_scanner_html = """
+    <div style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
+        <div style="width: 100%; height: 320px; border: 3px solid #FF3D00; border-radius: 12px; background: #000; position: relative;" id="reader"></div>
+    </div>
     
-    if billing_barcode:
-        st.success(f"🛒 Item Scanned for Billing: **{billing_barcode}**")
-        # මෙතැනින් ඩේටාබේස් එකෙන් අදාල අයිතමය ඇදලා Cart එකට දාන්න පුළුවන්
+    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+    function onScanSuccess(decodedText, decodedResult) {
+        var audio = document.getElementById('beep-sound');
+        if(audio) { audio.play(); }
+
+        const inputField = window.parent.document.querySelector('input[type="text"]');
+        if (inputField) {
+            inputField.value = decodedText;
+            inputField.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        
+        document.getElementById('scanned-result').innerHTML = "<b style='color:green; font-size:18px;'>✅ Scanned Successfully: " + decodedText + "</b>";
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", 
+        { 
+            fps: 20, 
+            qrbox: { width: 300, height: 120 },
+            facingMode: "environment",
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            }
+        }, 
+        false
+    );
+    html5QrcodeScanner.render(onScanSuccess, (err) => {});
+    </script>
+    
+    <div id="scanned-result" style="text-align: center; margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #e65100; font-weight: bold;">
+        📱 Point camera at curved barcode steadily...
+    </div>
+    """
+    components.html(advanced_scanner_html, height=500)
+
+st.markdown("---")
+
+# ස්කෑන් වන හෝ අතින් ක්ෂණිකව සකස් කළ හැකි අංකය
+scanned_barcode = st.text_input("Scanned Barcode / Item Code", placeholder="Scan item or verify code here...")
+
+if scanned_barcode:
+    st.success(st.markdown(f"🔍 Active Code to Process: **`{scanned_barcode}`**"))
+    # මෙතැනින් ඉදිරියට ඩේටාබේස් ලොජික් එක ක්‍රියාත්මක කරගත හැක.
 
 
 
