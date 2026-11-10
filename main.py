@@ -1,41 +1,41 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.subheader("📷 PiPOS Professional Scanner (Stock In & Billing)")
+st.subheader("📷 PiPOS Advanced Barcode & QR Scanner")
 
-# ටැබ් දෙකකට වෙන් කිරීම (1. Stock In - ඩීලර් බඩු ඇතුළත් කිරීම, 2. Billing - බිල් කිරීම)
+# ටැබ් දෙකට වෙන් කිරීම (1. Stock In - ඩීලර් බඩු ඇතුළත් කිරීම, 2. Billing - බිල් කිරීම)
 tab1, tab2 = st.tabs(["📦 1. Stock In (Dealer Register)", "🛒 2. POS Billing (Shop Sale)"])
 
 with tab1:
     st.markdown("### 📥 Dealer Stock In - Scan New Items")
     st.info("ඩීලර් විසින් අලුත් බඩු ස්කෑන් කර පළමු වතාවට ඩේටාබේස් එකට ඇතුළත් කරන තැන.")
     
-    # ඩීලර් සඳහා ස්කෑනරය ටොගල් කිරීම
     if 'stock_scanner' not in st.session_state:
         st.session_state.stock_scanner = False
 
-    if not st.session_state.stock_scanner:
-        if st.button("📷 Open Stock Scanner", type="primary"):
-            st.session_state.stock_scanner = True
-            st.rerun()
-    else:
-        if st.button("❌ Close Stock Scanner", type="secondary"):
-            st.session_state.stock_scanner = False
-            st.rerun()
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if not st.session_state.stock_scanner:
+            if st.button("📷 Open Stock Scanner", type="primary", use_container_width=True):
+                st.session_state.stock_scanner = True
+                st.rerun()
+    with col2:
+        if st.session_state.stock_scanner:
+            if st.button("❌ Close Stock Scanner", type="secondary", use_container_width=True):
+                st.session_state.stock_scanner = False
+                st.rerun()
 
     if st.session_state.stock_scanner:
         stock_scanner_html = """
         <div style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
-            <div style="width: 100%; height: 300px; border: 3px solid #00E676; border-radius: 12px; background: #000;" id="stock-reader"></div>
+            <div style="width: 100%; height: 320px; border: 3px solid #00E676; border-radius: 12px; background: #000;" id="stock-reader"></div>
         </div>
         
-        <!-- Beep Audio Element -->
         <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
         <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
         <script>
         function onScanSuccess(decodedText, decodedResult) {
-            // Play Beep Sound
             var audio = document.getElementById('beep-sound');
             if(audio) { audio.play(); }
 
@@ -50,19 +50,22 @@ with tab1:
         let html5QrCode = new Html5Qrcode("stock-reader");
         html5QrCode.start(
             { facingMode: "environment" },
-            { fps: 15, qrbox: { width: 280, height: 280 } },
+            { 
+                fps: 20, 
+                qrbox: { width: 280, height: 280 },
+                experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+            },
             onScanSuccess
         ).catch(err => { console.log(err); });
         </script>
         <div id="stock-result" style="text-align: center; margin-top: 10px; color: green; font-weight: bold;"></div>
         """
-        components.html(stock_scanner_html, height=380)
+        components.html(stock_scanner_html, height=400)
 
-    # ඩීලර් ස්කෑන් කර ලබාගන්නා අංකය වැටෙන තැන
     stock_barcode = st.text_input("Scanned Barcode (Stock In)", placeholder="Scan or type barcode...")
     
     if stock_barcode:
-        st.success(f"📦 New Barcode Detected: **{stock_barcode}**")
+        st.success(f"Active Code to Process: {stock_barcode}")
         with st.form("register_form"):
             item_name = st.text_input("Item Name (e.g. Cinnamon 100g)")
             item_price = st.number_input("Unit Price (Rs.)", min_value=0.0)
@@ -79,92 +82,61 @@ with tab2:
     if 'bill_scanner' not in st.session_state:
         st.session_state.bill_scanner = False
 
-    if not st.session_state.bill_scanner:
-        if st.button("📷 Open Billing Scanner", type="primary"):
-            st.session_state.bill_scanner = True
-            st.rerun()
-    else:
-        if st.button("❌ Close Billing Scanner", type="secondary"):
-            st.session_state.bill_scanner = False
-            st.rerun()
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if not st.session_state.bill_scanner:
+            if st.button("📷 Open Billing Scanner", type="primary", use_container_width=True):
+                st.session_state.bill_scanner = True
+                st.rerun()
+    with col2:
+        if st.session_state.bill_scanner:
+            if st.button("❌ Close Billing Scanner", type="secondary", use_container_width=True):
+                st.session_state.bill_scanner = False
+                st.rerun()
 
     if st.session_state.bill_scanner:
         billing_scanner_html = """
         <div style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
-            <div style="width: 100%; height: 300px; border: 3px solid #2979FF; border-radius: 12px; background: #000;" id="billing-reader"></div>
-import streamlit as st
-import streamlit.components.v1 as components
-
-st.subheader("📷 PiPOS Advanced Barcode & QR Scanner")
-
-if 'scanner_active' not in st.session_state:
-    st.session_state.scanner_active = False
-
-col1, col2 = st.columns([1, 1])
-with col1:
-    if not st.session_state.scanner_active:
-        if st.button("📷 Open Pro Scanner", type="primary", use_container_width=True):
-            st.session_state.scanner_active = True
-            st.rerun()
-with col2:
-    if st.session_state.scanner_active:
-        if st.button("❌ Close Scanner", type="secondary", use_container_width=True):
-            st.session_state.scanner_active = False
-            st.rerun()
-
-if st.session_state.scanner_active:
-    # වැඩි දියුණු කළ Native Barcode Detector HTML5 කෝඩ් එක (వක්‍ර කෝඩ් සඳහා වඩාත් නිරවද්‍යයි)
-    advanced_scanner_html = """
-    <div style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
-        <div style="width: 100%; height: 320px; border: 3px solid #FF3D00; border-radius: 12px; background: #000; position: relative;" id="reader"></div>
-    </div>
-    
-    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script>
-    function onScanSuccess(decodedText, decodedResult) {
-        var audio = document.getElementById('beep-sound');
-        if(audio) { audio.play(); }
-
-        const inputField = window.parent.document.querySelector('input[type="text"]');
-        if (inputField) {
-            inputField.value = decodedText;
-            inputField.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+            <div style="width: 100%; height: 320px; border: 3px solid #2979FF; border-radius: 12px; background: #000;" id="billing-reader"></div>
+        </div>
         
-        document.getElementById('scanned-result').innerHTML = "<b style='color:green; font-size:18px;'>✅ Scanned Successfully: " + decodedText + "</b>";
-    }
+        <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", 
-        { 
-            fps: 20, 
-            qrbox: { width: 300, height: 120 },
-            facingMode: "environment",
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+        <script>
+        function onBillingScanSuccess(decodedText, decodedResult) {
+            var audio = document.getElementById('beep-sound');
+            if(audio) { audio.play(); }
+
+            const inputField = window.parent.document.querySelector('input[aria-label="Scanned Barcode (Billing)"]');
+            if (inputField) {
+                inputField.value = decodedText;
+                inputField.dispatchEvent(new Event('input', { bubbles: true }));
             }
-        }, 
-        false
-    );
-    html5QrcodeScanner.render(onScanSuccess, (err) => {});
-    </script>
+            document.getElementById('billing-result').innerHTML = "<b style='color:blue; font-size:18px;'>✅ Scanned: " + decodedText + "</b>";
+        }
+
+        let html5BillingQrCode = new Html5Qrcode("billing-reader");
+        html5BillingQrCode.start(
+            { facingMode: "environment" },
+            { 
+                fps: 20, 
+                qrbox: { width: 280, height: 280 },
+                experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+            },
+            onBillingScanSuccess
+        ).catch(err => { console.log(err); });
+        </script>
+        <div id="billing-result" style="text-align: center; margin-top: 10px; color: blue; font-weight: bold;"></div>
+        """
+        components.html(billing_scanner_html, height=400)
+
+    billing_barcode = st.text_input("Scanned Barcode (Billing)", placeholder="Scan product barcode...")
     
-    <div id="scanned-result" style="text-align: center; margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #e65100; font-weight: bold;">
-        📱 Point camera at curved barcode steadily...
-    </div>
-    """
-    components.html(advanced_scanner_html, height=500)
+    if billing_barcode:
+        st.success(f"Active Code to Process: {billing_barcode}")
+        # මෙතැනින් ඩේටාබේස් එකෙන් අදාළ අයිතමය ඇදලා Cart එකට දාන ලොජික් එක ලියාගත හැක.
 
-st.markdown("---")
-
-# ස්කෑන් වන හෝ අතින් ක්ෂණිකව සකස් කළ හැකි අංකය
-scanned_barcode = st.text_input("Scanned Barcode / Item Code", placeholder="Scan item or verify code here...")
-
-if scanned_barcode:
-    st.success(f"Active Code to Process: {scanned_barcode}")
-    # මෙතැනින් ඉදිරියට ඩේටාබේස් ලොජික් එක ක්‍රියාත්මක කරගත හැක.
 
 
 
