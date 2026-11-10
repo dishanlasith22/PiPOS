@@ -163,8 +163,9 @@ st.markdown("---")
 scanned_barcode = st.text_input("Scanned Barcode / Item Code", placeholder="Scan item or verify code here...")
 
 if scanned_barcode:
-    st.success(st.markdown(f"🔍 Active Code to Process: **`{scanned_barcode}`**"))
+    st.success(f"Active Code to Process: {scanned_barcode}")
     # මෙතැනින් ඉදිරියට ඩේටාබේස් ලොජික් එක ක්‍රියාත්මක කරගත හැක.
+
 
 
 
