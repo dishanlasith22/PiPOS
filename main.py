@@ -1,4 +1,9 @@
 import streamlit as st
+
+# Pi Domain Verification Key output
+st.text("5cbce2829c97aff62dd9a70a71f397e4591d20f7cd081d29bc63c2304b16a49bca9b11bcc7bf0e919c1c8715ac679f3eac82128809d1e7713d44264d4ebda598")
+
+import streamlit as st
 import sqlite3
 from database import init_db
 from shop_owner_app import render_shop_owner_app
