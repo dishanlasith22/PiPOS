@@ -1,36 +1,40 @@
+
 import streamlit as st
 import streamlit.components.v1 as components
 
 st.subheader("📷 Live Barcode & QR Scanner")
 
-# ජංගම දුරකථන කැමරාවෙන් සජීවීව බාර්කෝඩ් ස්කෑන් කරන JavaScript කෝඩ් එක
+# පසුපස කැමරාව (Back Camera) පාවිච්චි කරන ස්කෑනර් කෝඩ් එක
 scanner_code = """
 <div style="width: 100%; max-width: 400px; margin: auto;" id="reader"></div>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 function onScanSuccess(decodedText, decodedResult) {
-    // බාර්කෝඩ් එක සාර්ථකව ස්කෑන් වූ පසු පෙන්වන අංකය
     document.getElementById('scanned-result').innerHTML = "<b style='color:green; font-size:18px;'>✅ Scanned Code: " + decodedText + "</b>";
-    
-    // මෙහිදී කෝඩ් එක Streamlit වෙත යැවීම සඳහා අවශ්‍ය ලොජික් එක ක්‍රියාත්මක කළ හැක
     console.log(`Code matched = ${decodedText}`);
 }
 
 function onScanFailure(error) {
-    // ස්කෑන් වන අතරතුර දෝෂ සිදු නොවීමට (Quiet failure)
+    // Silent failure while scanning
 }
 
 let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader", { fps: 10, qrbox: { width: 250, height: 100 } }, /* verbose= */ false);
+    "reader", 
+    { 
+        fps: 10, 
+        qrbox: { width: 250, height: 100 },
+        facingMode: "environment"  // පසුපස කැමරාව (Back Camera) සඳහා
+    }, 
+    false
+);
 html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 </script>
 
 <div id="scanned-result" style="text-align: center; margin-top: 15px; padding: 10px; background: #f0f2f6; border-radius: 8px;">
-    📷 Point camera at barcode to scan...
+    📷 Point back camera at barcode...
 </div>
 """
 
-# Streamlit ඇප් එක තුළ මෙම කැමරා ස්කෑනරය පෙන්වීම
 components.html(scanner_code, height=450)
 
 
